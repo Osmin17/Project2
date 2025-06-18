@@ -1,0 +1,1 @@
+// This file is a placeholder for the image 'o.png'. If you want to use this image as a background or reference in your penalty shootout game, please specify how you want it to be used (e.g., as a background, for color palette, for layout, etc.).

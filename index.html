@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cartoon Penalty Shootout</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="team-select">
+    <h1>Penalty Shootout</h1>
+    <label for="team">Choose your team:</label>
+    <select id="team">
+      <option value="real_madrid">Real Madrid</option>
+      <option value="barcelona">Barcelona</option>
+      <option value="atletico">Atlético de Madrid</option>
+      <option value="ac_milan">AC Milan</option>
+      <option value="inter">Inter Milan</option>
+      <option value="liverpool">Liverpool</option>
+    </select>
+    <button id="start-btn">Start Shootout</button>
+  </div>
+  <canvas id="game-canvas" width="700" height="500" style="display:none;"></canvas>
+  <div id="controls" style="display:none;">
+    <b>Controls:</b> Click to aim and shoot. Use arrow keys to move the keeper when saving.
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>
