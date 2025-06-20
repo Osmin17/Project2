@@ -40,16 +40,22 @@ body {
   margin-top: 10px;
 }
 button {
-  padding: 8px 16px;
-  font-size: 1em;
+  padding: 10px 22px;
+  font-size: 1.1em;
   border: none;
-  border-radius: 5px;
+  border-radius: 7px;
   background: #388e3c;
   color: #fff;
   cursor: pointer;
+  margin: 8px 0;
+  box-shadow: 0 2px 8px #0003;
+  transition: background 0.2s;
 }
 button:active {
   background: #1b5e20;
+}
+button:hover {
+  background: #43a047;
 }
 #team-select {
   position: fixed;
@@ -109,4 +115,112 @@ button:active {
   display: inline-block;
   padding: 8px 20px;
   border-radius: 10px;
+}
+#career-container {
+  margin: 40px auto;
+  background: #234d23;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px #0008;
+  width: 350px;
+  padding: 32px 24px 32px 24px;
+}
+#club-section {
+  margin-bottom: 30px;
+}
+#club-logo {
+  margin: 12px 0 8px 0;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px #0006;
+}
+#club-name {
+  font-size: 1.3em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+#clicker-section {
+  margin-top: 18px;
+}
+#goal-count {
+  font-size: 1.5em;
+  color: #ffd600;
+  font-weight: bold;
+}
+#transfer-section button {
+  background: #1976d2;
+}
+#transfer-section button:hover {
+  background: #2196f3;
+}
+#shop-section {
+  background: #183218;
+  border-radius: 10px;
+  margin: 24px auto 0 auto;
+  padding: 16px 10px 10px 10px;
+  width: 90%;
+  max-width: 300px;
+  box-shadow: 0 2px 8px #0003;
+}
+#shop-section h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #ffd600;
+  font-size: 1.1em;
+}
+#shop-section button {
+  background: #ffb300;
+  color: #222;
+  font-weight: bold;
+  margin: 6px 0;
+  border-radius: 6px;
+  font-size: 1em;
+  box-shadow: 0 1px 4px #0002;
+}
+#shop-section button:disabled {
+  background: #888;
+  color: #eee;
+  cursor: not-allowed;
+}
+#assist-count {
+  color: #90caf9;
+  font-size: 1.1em;
+  margin-top: 8px;
+}
+#player-select-section {
+  margin-bottom: 18px;
+}
+#player-select-section button {
+  background: #222;
+  color: #fff;
+  border: 2px solid #ffd600;
+  border-radius: 10px;
+  margin: 0 8px 8px 0;
+  padding: 10px 18px 10px 10px;
+  font-size: 1.1em;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 0 2px 8px #0003;
+  transition: background 0.2s, border 0.2s;
+}
+#player-select-section button:hover {
+  background: #ffd600;
+  color: #222;
+  border: 2px solid #fff;
+}
+#player-select-section img {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+#player-chosen {
+  margin: 10px 0 10px 0;
+  font-size: 1.1em;
+  color: #ffd600;
+}
+a {
+  color: #1976d2;
+  text-decoration: underline;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+a:hover {
+  color: #0d47a1;
 }

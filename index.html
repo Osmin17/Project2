@@ -3,27 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cartoon Penalty Shootout</title>
+  <title>Football Career Clicker</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #1a2332; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; }
+    #site-link-bar a { color: #2196f3; font-weight: bold; text-decoration: underline; font-size: 1.2em; }
+    #career-container { background: #222b3a; border-radius: 16px; padding: 24px; box-shadow: 0 4px 24px #0008; margin: 24px auto; max-width: 600px; }
+    #clicker-section button, #shop-section button, #player-select-section button { margin: 6px 0; padding: 10px 18px; font-size: 1em; border-radius: 8px; border: none; background: #2196f3; color: #fff; cursor: pointer; font-weight: bold; }
+    #clicker-section button:disabled, #shop-section button:disabled { background: #888; cursor: not-allowed; }
+    #club-logo { width: 64px; height: 64px; border-radius: 12px; background: #fff; margin-right: 16px; vertical-align: middle; }
+    #player-chosen img { border: 2px solid #2196f3; }
+    #transfer-section { margin-top: 18px; }
+  </style>
 </head>
 <body>
-  <div id="team-select">
-    <h1>Penalty Shootout</h1>
-    <label for="team">Choose your team:</label>
-    <select id="team">
-      <option value="real_madrid">Real Madrid</option>
-      <option value="barcelona">Barcelona</option>
-      <option value="atletico">Atlético de Madrid</option>
-      <option value="ac_milan">AC Milan</option>
-      <option value="inter">Inter Milan</option>
-      <option value="liverpool">Liverpool</option>
-    </select>
-    <button id="start-btn">Start Shootout</button>
+  <div id="site-link-bar">
+    <a href="http://localhost:5500/" target="_blank">Open Football Clicker Game</a>
   </div>
-  <canvas id="game-canvas" width="700" height="500" style="display:none;"></canvas>
-  <div id="controls" style="display:none;">
-    <b>Controls:</b> Click to aim and shoot. Use arrow keys to move the keeper when saving.
+
+  <div id="career-container">
+    <h2>Football Career Clicker</h2>
+    <div id="player-chosen"></div>
+    <div id="club-section" style="margin-bottom:16px;">
+      <img id="club-logo" src="" alt="Club Logo" style="display:inline-block;">
+      <span id="club-name" style="font-size:1.2em;font-weight:bold;"></span>
+    </div>
+    <button id="roll-club">Roll for Club</button>
+    <div id="clicker-section" style="display:none;">
+      <div style="margin:12px 0;">
+        <button id="score-btn">Score Goal!</button>
+        <span style="margin-left:18px;">Goals: <span id="goal-count">0</span></span>
+      </div>
+      <div id="shop-section"></div>
+      <div id="transfer-section" style="display:none;">
+        <button id="transfer-btn">Move to New Club or Stay</button>
+      </div>
+    </div>
   </div>
+
   <script src="main.js"></script>
 </body>
 </html>
