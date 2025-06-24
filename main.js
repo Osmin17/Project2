@@ -28,8 +28,11 @@ window.addEventListener('DOMContentLoaded', function() {
   console.log('clubLogo:', clubLogo, 'clubName:', clubName, 'rollBtn:', rollBtn, 'clickerSection:', clickerSection, 'goalCount:', goalCount, 'scoreBtn:', scoreBtn, 'transferSection:', transferSection, 'transferBtn:', transferBtn);
 
   // --- FORCE UI VISIBLE FOR DEBUGGING ---
-  if (clickerSection) clickerSection.style.display = 'block';
-  if (rollBtn) rollBtn.style.display = 'inline-block';
+  if (clickerSection) clickerSection.style.display = 'none'; // Hide clicker section at start
+  if (rollBtn) {
+    rollBtn.style.display = 'inline-block';
+    rollBtn.disabled = true; // Disable until player is chosen
+  }
   let playerSelectSection = document.getElementById('player-select-section');
   if (playerSelectSection) playerSelectSection.style.display = 'block';
 
@@ -42,7 +45,7 @@ window.addEventListener('DOMContentLoaded', function() {
     { name: 'Citeh', logo: 'citeh.png' },
     { name: 'PSG', logo: 'psg.png' },
     { name: 'Pool', logo: 'pool.png' },
-    { name: 'Real Madrid', logo: 'real madrid.png' },
+    { name: 'Real Madrid', logo: 'real_madrid.png' }, // changed from 'real madrid.png'
     { name: 'Santios', logo: 'santios.png' },
     { name: 'Sporting', logo: 'sporting.png' }
   ];
@@ -97,24 +100,45 @@ window.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  function setClubLogoAndName(club) {
+    clubLogo.onerror = function() {
+      clubLogo.src = '';
+      clubLogo.alt = 'Image not found';
+      clubName.textContent = club.name + ' (image missing)';
+    };
+    clubLogo.src = club.logo;
+    clubLogo.alt = club.name + ' Logo';
+    clubName.textContent = club.name;
+  }
+
   function rollForClub() {
-    // Randomize club, but don't repeat current club
-    let idx, newClub;
-    do {
-      idx = Math.floor(Math.random() * CLUBS.length);
-      newClub = CLUBS[idx];
-    } while (currentClub && newClub.name === currentClub.name && CLUBS.length > 1);
-    currentClub = newClub;
-    clubLogo.src = currentClub.logo;
-    clubName.textContent = currentClub.name;
-    clickerSection.style.display = 'block';
-    rollBtn.style.display = 'none';
-    goals = 0;
-    assists = 0;
-    goalsPerClick = 1;
-    updateGoals();
-    transferSection.style.display = 'none';
-    renderShop();
+    // Rolling animation: cycle through clubs for 1 second
+    let rollDuration = 1000; // ms
+    let interval = 70; // ms per frame
+    let rollInterval = setInterval(() => {
+      let idx = Math.floor(Math.random() * CLUBS.length);
+      let tempClub = CLUBS[idx];
+      setClubLogoAndName(tempClub);
+    }, interval);
+    setTimeout(() => {
+      clearInterval(rollInterval);
+      // Randomize club, but don't repeat current club
+      let idx, newClub;
+      do {
+        idx = Math.floor(Math.random() * CLUBS.length);
+        newClub = CLUBS[idx];
+      } while (currentClub && newClub.name === currentClub.name && CLUBS.length > 1);
+      currentClub = newClub;
+      setClubLogoAndName(currentClub);
+      clickerSection.style.display = 'block';
+      rollBtn.style.display = 'none';
+      goals = 0;
+      assists = 0;
+      goalsPerClick = 1;
+      updateGoals();
+      transferSection.style.display = 'none';
+      renderShop();
+    }, rollDuration);
   }
 
   function updateGoals() {
@@ -133,9 +157,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
   // Player selection UI
   let playerSelectSection = document.getElementById('player-select-section');
-  if (!playerSelectSection) {
-    playerSelectSection = document.createElement('div');
-    playerSelectSection.id = 'player-select-section';
+  if (playerSelectSection) {
     playerSelectSection.innerHTML = '<h2>Choose Your Player</h2>';
     PLAYERS.forEach((p, i) => {
       const btn = document.createElement('button');
@@ -144,13 +166,13 @@ window.addEventListener('DOMContentLoaded', function() {
         selectedPlayer = p;
         playerSelectSection.style.display = 'none';
         rollBtn.style.display = 'inline-block';
+        rollBtn.disabled = false;
         document.getElementById('player-chosen').innerHTML = `Player: <img src="${p.img}" style="width:32px;height:32px;border-radius:50%;vertical-align:middle;"> <b>${p.name}</b>`;
       };
       playerSelectSection.appendChild(btn);
     });
-    careerContainer.insertBefore(playerSelectSection, careerContainer.firstChild.nextSibling);
-    // Show player selection at start
     playerSelectSection.style.marginBottom = '18px';
+    playerSelectSection.style.display = 'block';
   }
   // Show player info
   let playerChosen = document.getElementById('player-chosen');
@@ -161,7 +183,8 @@ window.addEventListener('DOMContentLoaded', function() {
     careerContainer.insertBefore(playerChosen, document.getElementById('club-section'));
   }
   // Hide roll button until player is chosen
-  rollBtn.style.display = 'none';
+  rollBtn.style.display = 'inline-block';
+  rollBtn.disabled = true;
 
   // Fix: Ensure rollBtn event is set after DOM is ready and player is chosen
   function enableRollBtn() {
@@ -169,29 +192,46 @@ window.addEventListener('DOMContentLoaded', function() {
     rollBtn.disabled = false;
   }
 
-  // Update player select to call enableRollBtn
-  if (!playerSelectSection._patched) {
-    Array.from(playerSelectSection.querySelectorAll('button')).forEach((btn, idx) => {
-      btn.onclick = function() {
-        selectedPlayer = PLAYERS[idx];
-        playerSelectSection.style.display = 'none';
-        enableRollBtn();
-        document.getElementById('player-chosen').innerHTML = `Player: <img src="${selectedPlayer.img}" style="width:32px;height:32px;border-radius:50%;vertical-align:middle;"> <b>${selectedPlayer.name}</b>`;
-      };
-    });
-    playerSelectSection._patched = true;
-  }
-
   rollBtn.onclick = function() {
-    if (selectedPlayer) {
+    try {
+      if (!selectedPlayer) {
+        alert('Please select a player first!');
+        return;
+      }
       rollForClub();
+    } catch (e) {
+      alert('Error: ' + e.message);
+      console.error(e);
     }
   };
 
-  // On load, show player select, hide clicker section and roll button
-  clickerSection.style.display = 'none';
-  rollBtn.style.display = 'none';
+  // Player selection UI logic for new HTML
+  const mainGameUI = document.getElementById('main-game-ui');
+  const playerChosenDiv = document.getElementById('player-chosen');
+  const ronaldoBtn = document.getElementById('player-ronaldo');
+  const neymarBtn = document.getElementById('player-neymar');
+  const messiBtn = document.getElementById('player-messi');
+  function handlePlayerSelect(player) {
+    console.log('Player selected:', player.name);
+    // Store player in localStorage for next page
+    localStorage.setItem('selectedPlayer', JSON.stringify(player));
+    window.location.href = 'club-select.html';
+  }
+  if (ronaldoBtn) ronaldoBtn.onclick = function() {
+    handlePlayerSelect({ name: 'Ronaldo', img: 'ron.jpg' });
+  };
+  if (neymarBtn) neymarBtn.onclick = function() {
+    handlePlayerSelect({ name: 'Neymar', img: 'psgmar.webp' });
+  };
+  if (messiBtn) messiBtn.onclick = function() {
+    handlePlayerSelect({ name: 'Messi', img: 'lionel.jpg' });
+  };
+  // Initial UI state
+  mainGameUI.style.display = 'none';
   playerSelectSection.style.display = 'block';
+  rollBtn.style.display = 'inline-block';
+  rollBtn.disabled = true;
+  clickerSection.style.display = 'none';
 
   // Score button clicker logic
   scoreBtn.onclick = function() {
