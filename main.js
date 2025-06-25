@@ -4,18 +4,54 @@ window.addEventListener('DOMContentLoaded', function() {
   console.log('JS loaded and running');
   let linkBar = document.getElementById('site-link-bar');
   console.log('linkBar:', linkBar);
+  // --- NAVIGATION BAR: Home, Visit Website (new tab), Clear Cache ---
   if (!linkBar) {
     linkBar = document.createElement('div');
     linkBar.id = 'site-link-bar';
     linkBar.style.margin = '18px 0 0 0';
-    linkBar.innerHTML = '<a href="http://localhost:5500/" target="_blank">Open Football Clicker Game</a>';
+    linkBar.style.display = 'flex';
+    linkBar.style.gap = '18px';
+    linkBar.style.alignItems = 'center';
+    linkBar.style.background = '#f5f5f5';
+    linkBar.style.padding = '8px 16px';
+    linkBar.style.borderBottom = '1px solid #ddd';
+    linkBar.innerHTML = `
+      <a href="/index.html" style="color:#2196f3;text-decoration:underline;font-weight:bold;">Home</a>
+      <a href="/" style="color:#2196f3;text-decoration:underline;" target="_blank" rel="noopener">Visit Website</a>
+      <button id="clear-cache-btn" style="margin-left:auto;background:#2196f3;color:#fff;border:none;padding:6px 14px;border-radius:4px;cursor:pointer;">Clear Cache & Reload</button>
+    `;
     document.body.insertBefore(linkBar, document.body.firstChild);
+  }
+  // Always attach cache clearing logic (in case of hot reloads)
+  const clearBtn = document.getElementById('clear-cache-btn');
+  if (clearBtn) {
+    clearBtn.onclick = async function() {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map(name => caches.delete(name)));
+        }
+      } catch (e) { console.error('Cache clear error:', e); }
+      location.reload();
+    };
   }
 
   // Defensive: Only run clicker game JS if clicker HTML exists
-  const careerContainer = document.getElementById('career-container');
-  console.log('careerContainer:', careerContainer);
-  if (!careerContainer) return;
+  let careerContainer = document.getElementById('career-container');
+  if (!careerContainer) {
+    careerContainer = document.createElement('div');
+    careerContainer.id = 'career-container';
+    document.body.appendChild(careerContainer);
+  }
+  // Only declare playerSelectSection ONCE here and reuse below
+  let playerSelectSection = document.getElementById('player-select-section');
+  if (!playerSelectSection) {
+    playerSelectSection = document.createElement('div');
+    playerSelectSection.id = 'player-select-section';
+    careerContainer.appendChild(playerSelectSection);
+  }
 
   const clubLogo = document.getElementById('club-logo');
   const clubName = document.getElementById('club-name');
@@ -33,22 +69,7 @@ window.addEventListener('DOMContentLoaded', function() {
     rollBtn.style.display = 'inline-block';
     rollBtn.disabled = true; // Disable until player is chosen
   }
-  let playerSelectSection = document.getElementById('player-select-section');
   if (playerSelectSection) playerSelectSection.style.display = 'block';
-
-  const CLUBS = [
-    { name: 'Atleti', logo: 'atleti.png' },
-    { name: 'Barcaa', logo: 'barcaa.png' },
-    { name: 'Benfica', logo: 'benfica.png' },
-    { name: 'Castle', logo: 'castle.png' },
-    { name: 'Chelsea', logo: 'chelsea.png' },
-    { name: 'Citeh', logo: 'citeh.png' },
-    { name: 'PSG', logo: 'psg.png' },
-    { name: 'Pool', logo: 'pool.png' },
-    { name: 'Real Madrid', logo: 'real_madrid.png' }, // changed from 'real madrid.png'
-    { name: 'Santios', logo: 'santios.png' },
-    { name: 'Sporting', logo: 'sporting.png' }
-  ];
 
   const PLAYERS = [
     { name: 'Ronaldo', img: 'ron.jpg' },
@@ -156,24 +177,30 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   // Player selection UI
-  let playerSelectSection = document.getElementById('player-select-section');
-  if (playerSelectSection) {
+  // Always show player selection UI on the initial screen (index.html or root)
+  if (playerSelectSection && (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '' || window.location.pathname.endsWith('/Project2/'))) {
     playerSelectSection.innerHTML = '<h2>Choose Your Player</h2>';
-    PLAYERS.forEach((p, i) => {
+    // Use absolute paths for Codespaces/dev environments
+    const playerImages = [
+      { name: 'Ronaldo', img: '/players/ron.jpg' },
+      { name: 'Neymar', img: '/players/psgmar.webp' },
+      { name: 'Messi', img: '/players/lionel.jpg' }
+    ];
+    playerImages.forEach((p) => {
       const btn = document.createElement('button');
-      btn.innerHTML = `<img src="${p.img}" alt="${p.name}" style="width:48px;height:48px;border-radius:50%;vertical-align:middle;margin-right:8px;">${p.name}`;
+      btn.innerHTML = `<img src="${p.img}" alt="${p.name}" style="width:120px;height:120px;display:block;margin:auto;object-fit:cover;">` +
+        `<div style=\"color:#fff;font-weight:bold;\">${p.name}</div>`;
       btn.onclick = function() {
-        selectedPlayer = p;
-        playerSelectSection.style.display = 'none';
-        rollBtn.style.display = 'inline-block';
-        rollBtn.disabled = false;
-        document.getElementById('player-chosen').innerHTML = `Player: <img src="${p.img}" style="width:32px;height:32px;border-radius:50%;vertical-align:middle;"> <b>${p.name}</b>`;
+        // Store player in localStorage and go to club-select.html
+        localStorage.setItem('selectedPlayer', JSON.stringify(p));
+        window.location.href = 'club-select.html';
       };
       playerSelectSection.appendChild(btn);
     });
     playerSelectSection.style.marginBottom = '18px';
     playerSelectSection.style.display = 'block';
   }
+
   // Show player info
   let playerChosen = document.getElementById('player-chosen');
   if (!playerChosen) {
@@ -243,5 +270,104 @@ window.addEventListener('DOMContentLoaded', function() {
   transferBtn.onclick = function() {
     rollForClub();
   };
+
+  // --- Dynamically load all club images from /teams folder ---
+  async function getTeamImages() {
+    // This will only work if you have a server endpoint or can list files. For static hosting, you must hardcode or update this list manually.
+    // For Codespaces/Live Server, we can try to fetch a known list or use a static array.
+    // If you add new images, update this array:
+    return [
+      'atleti.png', 'barcaa.png', 'benfica.png', 'castle.png', 'chelsea.png', 'citeh.png',
+      'manu.svg', 'pool.png', 'psg.png', 'real_madrid.png', 'santios.png', 'sporting.png'
+    ];
+  }
+
+  // Use all team images for club selection
+  async function getClubs() {
+    const teamImages = await getTeamImages();
+    return teamImages.map(img => {
+      const name = img.replace(/\.(png|webp|jpg|jpeg|svg)$/i, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      return { name, logo: '/teams/' + img };
+    });
+  }
+
+  // --- Player selection UI always shown on /index.html or / ---
+  async function showPlayerSelection() {
+    playerSelectSection.innerHTML = '<h2><a href="/index.html" style="color:#2196f3;text-decoration:underline;cursor:pointer;">Football Career Clicker</a></h2>';
+    const playerImages = [
+      { name: 'Ronaldo', img: '/players/ron.jpg' },
+      { name: 'Neymar', img: '/players/psgmar.webp' },
+      { name: 'Messi', img: '/players/lionel.jpg' }
+    ];
+    playerImages.forEach((p) => {
+      const btn = document.createElement('button');
+      btn.innerHTML = `<img src="${p.img}" alt="${p.name}" style="width:120px;height:120px;display:block;margin:auto;object-fit:cover;">` +
+        `<div style=\"color:#fff;font-weight:bold;\">${p.name}</div>`;
+      btn.onclick = function() {
+        localStorage.setItem('selectedPlayer', JSON.stringify(p));
+        window.location.href = 'club-select.html';
+      };
+      playerSelectSection.appendChild(btn);
+    });
+    playerSelectSection.style.marginBottom = '18px';
+    playerSelectSection.style.display = 'block';
+  }
+
+  // On load, always show player selection if on /index.html or /
+  if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '' || window.location.pathname.endsWith('/Project2/')) {
+    showPlayerSelection();
+  }
+
+  // --- Club selection uses all team images ---
+  let CLUBS = [];
+  getClubs().then(clubs => { CLUBS = clubs; });
+
+  // --- Robustly enforce header as a blue, underlined link to /index.html ---
+  function enforceHeaderLink() {
+    const header = document.querySelector('#career-container h2');
+    if (header) {
+      // Always replace with a link, regardless of content
+      while (header.firstChild) header.removeChild(header.firstChild);
+      const headerLink = document.createElement('a');
+      headerLink.href = '/index.html';
+      headerLink.textContent = 'Football Career Clicker';
+      headerLink.style.color = '#2196f3';
+      headerLink.style.textDecoration = 'underline';
+      headerLink.style.cursor = 'pointer';
+      header.appendChild(headerLink);
+    }
+  }
+  enforceHeaderLink();
+  // Observe DOM changes to #career-container and always enforce the header link
+  const careerContainerObs = document.getElementById('career-container');
+  if (careerContainerObs) {
+    const observer = new MutationObserver(enforceHeaderLink);
+    observer.observe(careerContainerObs, { childList: true, subtree: true });
+  }
+
+  // --- Intercept header link click to always show player selection UI and hide game UI ---
+  document.addEventListener('DOMContentLoaded', function() {
+    const headerLink = document.querySelector('#career-container h2 a');
+    if (headerLink) {
+      headerLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Hide main game UI and show player selection UI
+        const mainGameUI = document.getElementById('main-game-ui');
+        const playerSelectSection = document.getElementById('player-select-section');
+        if (mainGameUI) mainGameUI.style.display = 'none';
+        if (playerSelectSection) {
+          playerSelectSection.style.display = 'block';
+          // Re-render player selection UI
+          if (typeof showPlayerSelection === 'function') {
+            showPlayerSelection();
+          } else {
+            // fallback: reload page if function missing
+            window.location.href = '/index.html';
+          }
+        }
+        // Optionally, clear any selected player
+        localStorage.removeItem('selectedPlayer');
+      });
+    }
+  });
 });
-// ...end of file...
