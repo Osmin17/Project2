@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Choose Your Club</title>
+  <title>Roll for Your Club</title>
   <link rel="stylesheet" href="style.css">
   <style>
     body { background: #1a2332; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; }
@@ -12,46 +12,59 @@
     #player-info { margin-top: 24px; }
     #player-chosen { margin-bottom: 18px; }
     #chosen-team-name { margin-top: 18px; font-size: 1.2em; font-weight: bold; color: #2196f3; }
+    /* Remove blue highlight on image click */
+    #club-select-container img:active, #click-player-img:active {
+      outline: none;
+      box-shadow: 0 2px 12px #0006;
+      border: none;
+      filter: brightness(0.95);
+    }
+    #click-player-img {
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
   </style>
 </head>
 <body>
   <div id="club-select-container">
     <h2>Roll for Your Club</h2>
-    <img id="club-logo" src="" alt="Club Logo">
+    <img id="club-logo" src="" alt="Club Logo" style="width:80px;height:80px;background:transparent;box-shadow:none;border:none;"> <!-- No white square -->
     <span id="club-name"></span>
     <button id="roll-btn">Roll</button>
     <div id="player-info"></div>
-    <div id="player-chosen"></div>
+    <!-- Removed duplicate yellow player text -->
   </div>
   <script>
-    // List of clubs (update as needed)
+    // List of clubs with real names and correct logos
     const CLUBS = [
-      { name: 'Atleti', logo: '/teams/atleti.png' },
-      { name: 'Barcaa', logo: '/teams/barcaa.png' },
-      { name: 'Benfica', logo: '/teams/benfica.png' },
-      { name: 'Castle', logo: '/teams/castle.png' },
-      { name: 'Chelsea', logo: '/teams/chelsea.png' },
-      { name: 'Citeh', logo: '/teams/citeh.png' },
-      { name: 'Manu', logo: '/teams/manu.svg' },
-      { name: 'Pool', logo: '/teams/pool.png' },
-      { name: 'PSG', logo: '/teams/psg.png' },
+      { name: 'Atlético Madrid', logo: '/teams/atleti.png' },
+      { name: 'FC Barcelona', logo: '/teams/barcaa.png' },
+      { name: 'SL Benfica', logo: '/teams/benfica.png' },
+      { name: 'Newcastle United', logo: '/teams/castle.png' },
+      { name: 'Chelsea FC', logo: '/teams/chelsea.png' },
+      { name: 'Manchester City', logo: '/teams/citeh.png' },
+      { name: 'Manchester United', logo: '/teams/manu.svg' },
+      { name: 'Liverpool FC', logo: '/teams/pool.png' },
+      { name: 'Paris Saint-Germain', logo: '/teams/psg.png' },
       { name: 'Real Madrid', logo: '/teams/real_madrid.png' },
-      { name: 'Santios', logo: '/teams/santios.png' },
-      { name: 'Sporting', logo: '/teams/sporting.png' }
+      { name: 'Santos FC', logo: '/teams/santios.png' },
+      { name: 'Sporting CP', logo: '/teams/sporting.png' }
     ];
     const rollBtn = document.getElementById('roll-btn');
     const clubLogo = document.getElementById('club-logo');
     const clubName = document.getElementById('club-name');
     const playerInfo = document.getElementById('player-info');
-    // Show selected player info
     let player = JSON.parse(localStorage.getItem('selectedPlayer'));
+    // Show selected player info (bigger, not stretched, face-focused)
     if (player) {
-      playerInfo.innerHTML = `<div style='margin-bottom:8px;'>Player: <b>${player.name}</b></div><img src='${player.img}' alt='${player.name}' style='width:80px;height:80px;border-radius:12px;background:#fff;'>`;
+      playerInfo.innerHTML = `<div style='margin-bottom:8px;'>Player: <b>${player.name}</b></div><div style='width:120px;height:120px;overflow:hidden;display:inline-block;border-radius:12px;background:#fff;'><img src='${player.img}' alt='${player.name}' style='width:120px;height:160px;object-fit:cover;object-position:center top;'></div>`;
     }
+    let chosenClub = null;
     rollBtn.onclick = function() {
-      // Rolling animation
+      // Rolling animation for 5 seconds
       clubLogo.style.display = 'block';
-      let rollDuration = 1000;
+      let rollDuration = 5000;
       let interval = 70;
       let rollInterval = setInterval(() => {
         let idx = Math.floor(Math.random() * CLUBS.length);
@@ -63,18 +76,150 @@
       setTimeout(() => {
         clearInterval(rollInterval);
         let idx = Math.floor(Math.random() * CLUBS.length);
-        let club = CLUBS[idx];
-        clubLogo.src = club.logo;
-        clubLogo.alt = club.name + ' Logo';
-        clubName.textContent = club.name;
-        // Optionally, store selected club
-        localStorage.setItem('selectedClub', JSON.stringify(club));
+        chosenClub = CLUBS[idx];
+        clubLogo.src = chosenClub.logo;
+        clubLogo.alt = chosenClub.name + ' Logo';
+        clubName.textContent = chosenClub.name;
+        localStorage.setItem('selectedClub', JSON.stringify(chosenClub));
+        // Change Roll button to Start button and setup clicker
+        rollBtn.textContent = 'Start';
+        rollBtn.onclick = startClickerGame;
       }, rollDuration);
     };
-    // Get player from localStorage
-    const playerChosenDiv = document.getElementById('player-chosen');
-    if (player) {
-      playerChosenDiv.innerHTML = `Player: <img src="${player.img}" style="width:48px;height:48px;border-radius:0;object-fit:cover;vertical-align:middle;"> <b>${player.name}</b>`;
+    function startClickerGame() {
+      // Set background image for clicker page
+      document.body.style.background = "url('champ.jpg') center center/cover no-repeat fixed";
+      document.getElementById('club-select-container').innerHTML = `
+        <div style="display:flex;justify-content:center;align-items:flex-start;gap:48px;min-height:400px;">
+          <div id="clicker-main" style="flex:2;text-align:center;">
+            <h2 style='font-size:2.2em;margin-bottom:18px;'>${chosenClub ? chosenClub.name : ''}</h2>
+            <img src="${chosenClub ? chosenClub.logo : ''}" alt="Club Logo" style="width:120px;height:120px;display:block;margin:0 auto 18px;background:transparent;box-shadow:none;border:none;">
+            <div style="margin-bottom:18px;font-size:1.3em;">Player: <b>${player.name}</b></div>
+            <div style='width:220px;height:220px;overflow:hidden;display:inline-block;border-radius:24px;background:#fff;box-shadow:0 2px 18px #0008;'><img id="click-player-img" src="${player.img}" alt="${player.name}" style="width:220px;height:280px;object-fit:cover;object-position:center top;cursor:pointer;"></div>
+            <div style="margin:28px 0 18px 0;font-size:1.5em;"><span id="goals">0</span> Goals | <span id="assists">0</span> Assists</div>
+            <div style="font-size:1.1em;color:#aaa;">Click the player to earn goals and assists!</div>
+          </div>
+          <div id="shop" style="flex:1;min-width:220px;max-width:320px;text-align:center;background:#263045;padding:24px 12px 18px 12px;border-radius:16px;box-shadow:0 2px 12px #0006;margin-top:24px;">
+            <h3 style='margin:0 0 18px 0;color:#ffeb3b;font-size:1.3em;'>Shop</h3>
+            <button id="upgrade-goal" style="margin:12px 0;width:90%;font-size:1.1em;">Upgrade Goals (+1/click) [Cost: 100 Goals]</button><br>
+            <button id="upgrade-assist" style="margin:12px 0;width:90%;font-size:1.1em;">Upgrade Assists (+1/5 clicks) [Cost: 15 Assists]</button><br>
+            <button id="new-club" style="margin:12px 0;width:90%;font-size:1.1em;">New Club [Cost: 800 Goals, 50 Assists]</button>
+          </div>
+        </div>
+      `;
+      let goals = 0, assists = 0;
+      let goalsPerClick = 1;
+      let assistsPerClicks = 10;
+      let goalUpgradeCost = 100;
+      const playerImg = document.getElementById('click-player-img');
+      const goalsSpan = document.getElementById('goals');
+      const assistsSpan = document.getElementById('assists');
+      let clickCount = 0;
+      playerImg.onclick = function() {
+        goals += goalsPerClick;
+        clickCount++;
+        if (clickCount % assistsPerClicks === 0) {
+          assists++;
+          assistsSpan.textContent = assists;
+        }
+        goalsSpan.textContent = goals;
+      };
+      // Shop logic
+      document.getElementById('upgrade-goal').onclick = function() {
+        if (goals >= goalUpgradeCost) {
+          goals -= goalUpgradeCost;
+          goalsPerClick++;
+          goalsSpan.textContent = goals;
+          goalUpgradeCost = goalUpgradeCost * 2;
+          this.textContent = `Upgrade Goals (+1/click) [Cost: ${goalUpgradeCost} Goals]`;
+          this.disabled = false;
+        } else {
+          this.disabled = true;
+          setTimeout(() => { this.disabled = false; }, 1000);
+        }
+      };
+      document.getElementById('upgrade-assist').onclick = function() {
+        if (assists >= 15 && assistsPerClicks > 2) {
+          assists -= 15;
+          assistsPerClicks = Math.max(2, assistsPerClicks - 2);
+          assistsSpan.textContent = assists;
+          this.textContent = `Upgrade Assists (+1/${assistsPerClicks} clicks) [Cost: 15 Assists]`;
+          this.disabled = false;
+        } else {
+          this.disabled = true;
+          setTimeout(() => { this.disabled = false; }, 1000);
+        }
+      };
+      // Add stat history container to the page if not present
+      if (!document.getElementById('stat-history')) {
+        const statHistoryDiv = document.createElement('div');
+        statHistoryDiv.id = 'stat-history';
+        statHistoryDiv.style = 'position:fixed;top:24px;right:24px;max-width:320px;z-index:10;background:#181f2aee;padding:18px 16px 12px 16px;border-radius:14px;box-shadow:0 2px 16px #0008;color:#ffeb3b;font-size:1em;overflow-y:auto;max-height:80vh;';
+        statHistoryDiv.innerHTML = `<h3 style='margin:0 0 10px 0;font-size:1.1em;color:#fff;'>Club Stat History</h3><div id='stat-history-list'></div>`;
+        document.body.appendChild(statHistoryDiv);
+      }
+      document.getElementById('new-club').onclick = function() {
+        if (goals >= 800 && assists >= 50) {
+          // Show stat keeper for current club
+          const statSummary = `<div style='margin:0 0 10px 0;padding:10px 0;border-bottom:1px solid #444;'>
+            <b>${chosenClub.name}</b><br>Goals: ${goals} | Assists: ${assists}
+          </div>`;
+          // Add to stat history
+          const statHistoryList = document.getElementById('stat-history-list');
+          if (statHistoryList) statHistoryList.insertAdjacentHTML('beforeend', statSummary);
+          document.getElementById('club-select-container').insertAdjacentHTML('afterbegin', `<div style='margin:18px 0 8px 0;padding:12px;background:#1a2332;border-radius:10px;color:#ffeb3b;'><b>Stats for ${chosenClub.name}:</b><br>Goals: ${goals}<br>Assists: ${assists}</div>`);
+          goals -= 800;
+          assists -= 50;
+          // Show roll for new club UI
+          setTimeout(() => {
+            document.body.style.background = "#1a2332";
+            document.getElementById('club-select-container').innerHTML = `
+              <h2>Roll for Your Club</h2>
+              <img id="club-logo" src="" alt="Club Logo" style="width:80px;height:80px;"> 
+              <span id="club-name"></span>
+              <button id="roll-btn">Roll</button>
+              <div id="player-info"></div>
+            `;
+            // Show player info again
+            const playerInfoDiv = document.getElementById('player-info');
+            playerInfoDiv.innerHTML = `<div style='margin-bottom:8px;'>Player: <b>${player.name}</b></div><div style='width:120px;height:120px;overflow:hidden;display:inline-block;border-radius:12px;background:#fff;'><img src='${player.img}' alt='${player.name}' style='width:120px;height:160px;object-fit:cover;object-position:center top;'></div>`;
+            // Re-initialize roll logic
+            const rollBtn = document.getElementById('roll-btn');
+            const clubLogo = document.getElementById('club-logo');
+            const clubName = document.getElementById('club-name');
+            rollBtn.onclick = function() {
+              clubLogo.style.display = 'block';
+              let rollDuration = 5000;
+              let interval = 70;
+              let rollInterval = setInterval(() => {
+                let idx = Math.floor(Math.random() * CLUBS.length);
+                let tempClub = CLUBS[idx];
+                clubLogo.src = tempClub.logo;
+                clubLogo.alt = tempClub.name + ' Logo';
+                clubName.textContent = tempClub.name;
+              }, interval);
+              setTimeout(() => {
+                clearInterval(rollInterval);
+                let idx = Math.floor(Math.random() * CLUBS.length);
+                chosenClub = CLUBS[idx];
+                clubLogo.src = chosenClub.logo;
+                clubLogo.alt = chosenClub.name + ' Logo';
+                clubName.textContent = chosenClub.name;
+                localStorage.setItem('selectedClub', JSON.stringify(chosenClub));
+                // Change Roll button to Start button and setup clicker
+                rollBtn.textContent = 'Start';
+                rollBtn.onclick = function() {
+                  document.body.style.background = "url('champ.jpg') center center/cover no-repeat fixed";
+                  startClickerGame();
+                };
+              }, rollDuration);
+            };
+          }, 1200);
+        } else {
+          this.disabled = true;
+          setTimeout(() => { this.disabled = false; }, 1000);
+        }
+      };
     }
   </script>
 </body>
