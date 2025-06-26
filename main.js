@@ -1,6 +1,5 @@
 // Football Career Clicker Game Only
 window.addEventListener('DOMContentLoaded', function() {
-  alert('JS loaded!');
   console.log('JS loaded and running');
   let linkBar = document.getElementById('site-link-bar');
   console.log('linkBar:', linkBar);
@@ -191,14 +190,17 @@ window.addEventListener('DOMContentLoaded', function() {
       btn.innerHTML = `<img src="${p.img}" alt="${p.name}" style="width:120px;height:120px;display:block;margin:auto;object-fit:cover;">` +
         `<div style=\"color:#fff;font-weight:bold;\">${p.name}</div>`;
       btn.onclick = function() {
-        // Store player in localStorage and go to club-select.html
+        // Store player in localStorage and go to club roll screen
         localStorage.setItem('selectedPlayer', JSON.stringify(p));
+        // Go to club-select.html for the next step (as before)
         window.location.href = 'club-select.html';
       };
       playerSelectSection.appendChild(btn);
     });
     playerSelectSection.style.marginBottom = '18px';
     playerSelectSection.style.display = 'block';
+    // Hide main game UI until player is picked
+    if (mainGameUI) mainGameUI.style.display = 'none';
   }
 
   // Show player info
@@ -304,13 +306,17 @@ window.addEventListener('DOMContentLoaded', function() {
       btn.innerHTML = `<img src="${p.img}" alt="${p.name}" style="width:120px;height:120px;display:block;margin:auto;object-fit:cover;">` +
         `<div style=\"color:#fff;font-weight:bold;\">${p.name}</div>`;
       btn.onclick = function() {
+        // Store player in localStorage and go to club roll screen
         localStorage.setItem('selectedPlayer', JSON.stringify(p));
+        // Go to club-select.html for the next step (as before)
         window.location.href = 'club-select.html';
       };
       playerSelectSection.appendChild(btn);
     });
     playerSelectSection.style.marginBottom = '18px';
     playerSelectSection.style.display = 'block';
+    // Hide main game UI until player is picked
+    if (mainGameUI) mainGameUI.style.display = 'none';
   }
 
   // On load, always show player selection if on /index.html or /

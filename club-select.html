@@ -8,64 +8,74 @@
   <style>
     body { background: #1a2332; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; }
     #club-select-container { background: #222b3a; border-radius: 16px; padding: 24px; box-shadow: 0 4px 24px #0008; margin: 24px auto; max-width: 700px; text-align: center; }
-    .team-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; margin: 24px 0; }
-    .team-card { background: #181f2a; border-radius: 12px; padding: 12px; cursor: pointer; transition: box-shadow 0.2s, border 0.2s; border: 2px solid transparent; width: 120px; }
-    .team-card.selected { border: 2px solid #2196f3; box-shadow: 0 0 12px #2196f3; }
-    .team-card img { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; background: #fff; }
-    .team-card span { display: block; margin-top: 8px; color: #fff; font-weight: bold; font-size: 1em; }
+    #club-logo { display: none; margin: 0 auto 16px; }
+    #player-info { margin-top: 24px; }
     #player-chosen { margin-bottom: 18px; }
     #chosen-team-name { margin-top: 18px; font-size: 1.2em; font-weight: bold; color: #2196f3; }
   </style>
 </head>
 <body>
   <div id="club-select-container">
-    <h2>Choose Your Club</h2>
+    <h2>Roll for Your Club</h2>
+    <img id="club-logo" src="" alt="Club Logo">
+    <span id="club-name"></span>
+    <button id="roll-btn">Roll</button>
+    <div id="player-info"></div>
     <div id="player-chosen"></div>
-    <div class="team-grid" id="team-grid"></div>
-    <div id="chosen-team-name"></div>
   </div>
   <script>
+    // List of clubs (update as needed)
+    const CLUBS = [
+      { name: 'Atleti', logo: '/teams/atleti.png' },
+      { name: 'Barcaa', logo: '/teams/barcaa.png' },
+      { name: 'Benfica', logo: '/teams/benfica.png' },
+      { name: 'Castle', logo: '/teams/castle.png' },
+      { name: 'Chelsea', logo: '/teams/chelsea.png' },
+      { name: 'Citeh', logo: '/teams/citeh.png' },
+      { name: 'Manu', logo: '/teams/manu.svg' },
+      { name: 'Pool', logo: '/teams/pool.png' },
+      { name: 'PSG', logo: '/teams/psg.png' },
+      { name: 'Real Madrid', logo: '/teams/real_madrid.png' },
+      { name: 'Santios', logo: '/teams/santios.png' },
+      { name: 'Sporting', logo: '/teams/sporting.png' }
+    ];
+    const rollBtn = document.getElementById('roll-btn');
+    const clubLogo = document.getElementById('club-logo');
+    const clubName = document.getElementById('club-name');
+    const playerInfo = document.getElementById('player-info');
+    // Show selected player info
+    let player = JSON.parse(localStorage.getItem('selectedPlayer'));
+    if (player) {
+      playerInfo.innerHTML = `<div style='margin-bottom:8px;'>Player: <b>${player.name}</b></div><img src='${player.img}' alt='${player.name}' style='width:80px;height:80px;border-radius:12px;background:#fff;'>`;
+    }
+    rollBtn.onclick = function() {
+      // Rolling animation
+      clubLogo.style.display = 'block';
+      let rollDuration = 1000;
+      let interval = 70;
+      let rollInterval = setInterval(() => {
+        let idx = Math.floor(Math.random() * CLUBS.length);
+        let tempClub = CLUBS[idx];
+        clubLogo.src = tempClub.logo;
+        clubLogo.alt = tempClub.name + ' Logo';
+        clubName.textContent = tempClub.name;
+      }, interval);
+      setTimeout(() => {
+        clearInterval(rollInterval);
+        let idx = Math.floor(Math.random() * CLUBS.length);
+        let club = CLUBS[idx];
+        clubLogo.src = club.logo;
+        clubLogo.alt = club.name + ' Logo';
+        clubName.textContent = club.name;
+        // Optionally, store selected club
+        localStorage.setItem('selectedClub', JSON.stringify(club));
+      }, rollDuration);
+    };
     // Get player from localStorage
-    const player = JSON.parse(localStorage.getItem('selectedPlayer'));
     const playerChosenDiv = document.getElementById('player-chosen');
     if (player) {
       playerChosenDiv.innerHTML = `Player: <img src="${player.img}" style="width:48px;height:48px;border-radius:0;object-fit:cover;vertical-align:middle;"> <b>${player.name}</b>`;
     }
-    // List of teams from the /teams folder
-    const TEAMS = [
-      { name: 'Atleti', img: 'teams/atleti.png' },
-      { name: 'Barcaa', img: 'teams/barcaa.png' },
-      { name: 'Benfica', img: 'teams/benfica.png' },
-      { name: 'Castle', img: 'teams/castle.png' },
-      { name: 'Chelsea', img: 'teams/chelsea.png' },
-      { name: 'Citeh', img: 'teams/citeh.png' },
-      { name: 'Man United', img: 'teams/manu.svg' },
-      { name: 'Pool', img: 'teams/pool.png' },
-      { name: 'PSG', img: 'teams/psg.png' },
-      { name: 'Real Madrid', img: 'teams/real madrid.png' },
-      { name: 'Santios', img: 'teams/santios.png' },
-      { name: 'Sporting', img: 'teams/sporting.png' }
-    ];
-    const teamGrid = document.getElementById('team-grid');
-    const chosenTeamName = document.getElementById('chosen-team-name');
-    let selectedCard = null;
-    TEAMS.forEach(team => {
-      const card = document.createElement('div');
-      card.className = 'team-card';
-      card.innerHTML = `<img src="${team.img}" alt="${team.name}"><span>${team.name}</span>`;
-      card.querySelector('img').onerror = function() {
-        this.style.opacity = 0.3;
-        this.alt = 'Image not found';
-      };
-      card.onclick = function() {
-        if (selectedCard) selectedCard.classList.remove('selected');
-        card.classList.add('selected');
-        selectedCard = card;
-        chosenTeamName.textContent = `Chosen Club: ${team.name}`;
-      };
-      teamGrid.appendChild(card);
-      console.log('Added team card:', team.name, team.img);
-    });
   </script>
 </body>
 </html>
