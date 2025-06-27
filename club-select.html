@@ -28,12 +28,12 @@
 </head>
 <body>
   <div id="club-select-container">
-    <h2>Roll for Your Club</h2>
-    <img id="club-logo" src="" alt="Club Logo" style="width:80px;height:80px;background:transparent;box-shadow:none;border:none;"> <!-- No white square -->
+    <h2 style="font-size:2.2em;margin-bottom:18px;">Football Career Clicker</h2>
+    <img id="club-logo" src="" alt="Club Logo" style="width:80px;height:80px;background:transparent;box-shadow:none;border:none;display:none;">
     <span id="club-name"></span>
     <button id="roll-btn">Roll</button>
     <div id="player-info"></div>
-    <!-- Removed duplicate yellow player text -->
+    <!-- All old headers, cache/home/clear texts, and duplicate player text have been removed -->
   </div>
   <script>
     // List of clubs with real names and correct logos
@@ -96,14 +96,14 @@
             <img src="${chosenClub ? chosenClub.logo : ''}" alt="Club Logo" style="width:120px;height:120px;display:block;margin:0 auto 18px;background:transparent;box-shadow:none;border:none;">
             <div style="margin-bottom:18px;font-size:1.3em;">Player: <b>${player.name}</b></div>
             <div style='width:220px;height:220px;overflow:hidden;display:inline-block;border-radius:24px;background:#fff;box-shadow:0 2px 18px #0008;'><img id="click-player-img" src="${player.img}" alt="${player.name}" style="width:220px;height:280px;object-fit:cover;object-position:center top;cursor:pointer;"></div>
-            <div style="margin:28px 0 18px 0;font-size:1.5em;"><span id="goals">0</span> Goals | <span id="assists">0</span> Assists</div>
+            <div style="margin:28px 0 18px 0;font-size:1.5em;"><span id="goals">0</span> <span style='font-size:1.2em;'>⚽</span> Goals | <span id="assists">0</span> <span style='font-size:1.2em;'>🅰️</span> Assists</div>
             <div style="font-size:1.1em;color:#aaa;">Click the player to earn goals and assists!</div>
           </div>
           <div id="shop" style="flex:1;min-width:220px;max-width:320px;text-align:center;background:#263045;padding:24px 12px 18px 12px;border-radius:16px;box-shadow:0 2px 12px #0006;margin-top:24px;">
             <h3 style='margin:0 0 18px 0;color:#ffeb3b;font-size:1.3em;'>Shop</h3>
-            <button id="upgrade-goal" style="margin:12px 0;width:90%;font-size:1.1em;">Upgrade Goals (+1/click) [Cost: 100 Goals]</button><br>
-            <button id="upgrade-assist" style="margin:12px 0;width:90%;font-size:1.1em;">Upgrade Assists (+1/5 clicks) [Cost: 15 Assists]</button><br>
-            <button id="new-club" style="margin:12px 0;width:90%;font-size:1.1em;">New Club [Cost: 800 Goals, 50 Assists]</button>
+            <button id="upgrade-goal" style="margin:12px 0;width:90%;font-size:1.1em;background:#0a1a3a;color:#fff;">Upgrade Goals (+1/click) [Cost: 100 Goals]</button><br>
+            <button id="upgrade-assist" style="margin:12px 0;width:90%;font-size:1.1em;background:#0a1a3a;color:#fff;">Upgrade Assists (+1/5 clicks) [Cost: 15 Assists]</button><br>
+            <button id="new-club" style="margin:12px 0;width:90%;font-size:1.1em;background:#0a1a3a;color:#fff;">New Club [Cost: 800 Goals, 50 Assists]</button>
           </div>
         </div>
       `;
@@ -115,7 +115,51 @@
       const goalsSpan = document.getElementById('goals');
       const assistsSpan = document.getElementById('assists');
       let clickCount = 0;
+      // Load stat history from localStorage if present
+      let statHistoryArr = [];
+      if (localStorage.getItem('statHistoryArr')) {
+        try { statHistoryArr = JSON.parse(localStorage.getItem('statHistoryArr')) || []; } catch(e) { statHistoryArr = []; }
+      }
+      // Add stat history container to the page if not present
+      if (!document.getElementById('stat-history')) {
+        const statHistoryDiv = document.createElement('div');
+        statHistoryDiv.id = 'stat-history';
+        statHistoryDiv.style = 'position:fixed;top:24px;right:24px;max-width:320px;z-index:10;background:#181f2aee;padding:18px 16px 12px 16px;border-radius:14px;box-shadow:0 2px 16px #0008;color:#ffeb3b;font-size:1em;overflow-y:auto;max-height:80vh;';
+        statHistoryDiv.innerHTML = `<h3 style='margin:0 0 10px 0;font-size:1.1em;color:#fff;'>Club Stat History</h3><div id='stat-history-list'></div>`;
+        document.body.appendChild(statHistoryDiv);
+      }
+      // Render stat history from array
+      function renderStatHistory() {
+        const statHistoryList = document.getElementById('stat-history-list');
+        if (statHistoryList) {
+          statHistoryList.innerHTML = statHistoryArr.map(s => `<div style='margin:0 0 10px 0;padding:10px 0;border-bottom:1px solid #444;'><b>${s.club}</b><br>Goals: ${s.goals} | Assists: ${s.assists}</div>`).join('');
+        }
+      }
+      renderStatHistory();
+      // Remove white background from the player image container
+      const playerImgContainer = playerImg.parentElement;
+      if (playerImgContainer) {
+        playerImgContainer.style.background = 'transparent';
+      }
+      playerImg.addEventListener('mousedown', function() {
+        playerImg.style.transition = 'transform 0.08s cubic-bezier(.4,2,.6,1)';
+        playerImg.style.transform = 'scale(0.92)';
+      });
+      playerImg.addEventListener('mouseup', function() {
+        playerImg.style.transform = 'scale(1)';
+      });
+      playerImg.addEventListener('mouseleave', function() {
+        playerImg.style.transform = 'scale(1)';
+      });
+      playerImg.addEventListener('touchstart', function() {
+        playerImg.style.transition = 'transform 0.08s cubic-bezier(.4,2,.6,1)';
+        playerImg.style.transform = 'scale(0.92)';
+      });
+      playerImg.addEventListener('touchend', function() {
+        playerImg.style.transform = 'scale(1)';
+      });
       playerImg.onclick = function() {
+        // Clicker logic
         goals += goalsPerClick;
         clickCount++;
         if (clickCount % assistsPerClicks === 0) {
@@ -150,23 +194,14 @@
           setTimeout(() => { this.disabled = false; }, 1000);
         }
       };
-      // Add stat history container to the page if not present
-      if (!document.getElementById('stat-history')) {
-        const statHistoryDiv = document.createElement('div');
-        statHistoryDiv.id = 'stat-history';
-        statHistoryDiv.style = 'position:fixed;top:24px;right:24px;max-width:320px;z-index:10;background:#181f2aee;padding:18px 16px 12px 16px;border-radius:14px;box-shadow:0 2px 16px #0008;color:#ffeb3b;font-size:1em;overflow-y:auto;max-height:80vh;';
-        statHistoryDiv.innerHTML = `<h3 style='margin:0 0 10px 0;font-size:1.1em;color:#fff;'>Club Stat History</h3><div id='stat-history-list'></div>`;
-        document.body.appendChild(statHistoryDiv);
-      }
       document.getElementById('new-club').onclick = function() {
         if (goals >= 800 && assists >= 50) {
           // Show stat keeper for current club
-          const statSummary = `<div style='margin:0 0 10px 0;padding:10px 0;border-bottom:1px solid #444;'>
-            <b>${chosenClub.name}</b><br>Goals: ${goals} | Assists: ${assists}
-          </div>`;
-          // Add to stat history
-          const statHistoryList = document.getElementById('stat-history-list');
-          if (statHistoryList) statHistoryList.insertAdjacentHTML('beforeend', statSummary);
+          const statSummary = `<div style='margin:0 0 10px 0;padding:10px 0;border-bottom:1px solid #444;'><b>${chosenClub.name}</b><br>Goals: ${goals} | Assists: ${assists}</div>`;
+          // Add to stat history array and localStorage
+          statHistoryArr.push({ club: chosenClub.name, goals, assists });
+          localStorage.setItem('statHistoryArr', JSON.stringify(statHistoryArr));
+          renderStatHistory();
           document.getElementById('club-select-container').insertAdjacentHTML('afterbegin', `<div style='margin:18px 0 8px 0;padding:12px;background:#1a2332;border-radius:10px;color:#ffeb3b;'><b>Stats for ${chosenClub.name}:</b><br>Goals: ${goals}<br>Assists: ${assists}</div>`);
           goals -= 800;
           assists -= 50;
@@ -220,7 +255,76 @@
           setTimeout(() => { this.disabled = false; }, 1000);
         }
       };
+      // Save current club and stats to localStorage on each click
+      function saveCurrentClubStats() {
+        localStorage.setItem('currentClub', JSON.stringify({ club: chosenClub ? chosenClub.name : '', goals, assists, goalsPerClick, assistsPerClicks, goalUpgradeCost }));
+      }
+      playerImg.onclick = function() {
+        goals += goalsPerClick;
+        clickCount++;
+        if (clickCount % assistsPerClicks === 0) {
+          assists++;
+          assistsSpan.textContent = assists;
+        }
+        goalsSpan.textContent = goals;
+        saveCurrentClubStats();
+      };
+      document.getElementById('upgrade-goal').onclick = function() {
+        if (goals >= goalUpgradeCost) {
+          goals -= goalUpgradeCost;
+          goalsPerClick++;
+          goalsSpan.textContent = goals;
+          goalUpgradeCost = goalUpgradeCost * 2;
+          this.textContent = `Upgrade Goals (+1/click) [Cost: ${goalUpgradeCost} Goals]`;
+          this.disabled = false;
+          saveCurrentClubStats();
+        } else {
+          this.disabled = true;
+          setTimeout(() => { this.disabled = false; }, 1000);
+        }
+      };
+      document.getElementById('upgrade-assist').onclick = function() {
+        if (assists >= 15 && assistsPerClicks > 2) {
+          assists -= 15;
+          assistsPerClicks = Math.max(2, assistsPerClicks - 2);
+          assistsSpan.textContent = assists;
+          this.textContent = `Upgrade Assists (+1/${assistsPerClicks} clicks) [Cost: 15 Assists]`;
+          this.disabled = false;
+          saveCurrentClubStats();
+        } else {
+          this.disabled = true;
+          setTimeout(() => { this.disabled = false; }, 1000);
+        }
+      };
     }
+    // On clicker game start, restore current club stats if present
+    let savedClub = localStorage.getItem('currentClub');
+    if (savedClub) {
+      try {
+        let s = JSON.parse(savedClub);
+        if (s.club && s.club === chosenClub?.name) {
+          goals = s.goals || 0;
+          assists = s.assists || 0;
+          goalsPerClick = s.goalsPerClick || 1;
+          assistsPerClicks = s.assistsPerClicks || 10;
+          goalUpgradeCost = s.goalUpgradeCost || 100;
+        }
+      } catch(e) {}
+    } else if (localStorage.getItem('statHistoryArr')) {
+      // If no current club, but stat history exists, restore last club
+      try {
+        let arr = JSON.parse(localStorage.getItem('statHistoryArr'));
+        if (arr && arr.length > 0) {
+          let last = arr[arr.length - 1];
+          if (last.club === chosenClub?.name) {
+            goals = last.goals || 0;
+            assists = last.assists || 0;
+          }
+        }
+      } catch(e) {}
+    }
+    goalsSpan.textContent = goals;
+    assistsSpan.textContent = assists;
   </script>
 </body>
 </html>
